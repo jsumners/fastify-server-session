@@ -1,0 +1,48 @@
+{
+  "name": "fastify-server-session",
+  "version": "1.0.0",
+  "description": "A Fastify plugin to maintain state on the server",
+  "main": "plugin.js",
+  "scripts": {
+    "test": "tap 'test/**/*.test.js'",
+    "test-ci": "tap --cov 'test/**/*.test.js'",
+    "lint": "standard | snazzy",
+    "lint-ci": "standard"
+  },
+  "precommit": [
+    "lint",
+    "test"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jsumners/fastify-server-session.git"
+  },
+  "keywords": [
+    "fastify",
+    "session"
+  ],
+  "author": "James Sumners <james.sumners@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jsumners/fastify-server-session/issues"
+  },
+  "homepage": "https://github.com/jsumners/fastify-server-session#readme",
+  "devDependencies": {
+    "abstract-logging": "^1.0.0",
+    "cookie": "^0.3.1",
+    "fastify": "^0.33.0",
+    "fastify-caching": "^1.0.0",
+    "fastify-cookie": "^1.0.3",
+    "pre-commit": "^1.2.2",
+    "request": "^2.83.0",
+    "snazzy": "^7.0.0",
+    "standard": "^10.0.3",
+    "tap": "^10.7.3"
+  },
+  "dependencies": {
+    "cookie-signature": "^1.0.6",
+    "fastify-plugin": "^0.1.1",
+    "merge-options": "^1.0.0",
+    "uid-safe": "^2.1.5"
+  }
+}
