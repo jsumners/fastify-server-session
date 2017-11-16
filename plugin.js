@@ -33,7 +33,10 @@ function plugin (fastify, options, next) {
   // I really think this should be an onRequest, but that hook doesn't
   // have Fastify objects passed in. ~ jsumners
   fastify.addHook('preHandler', function (req, reply, next) {
-    if (!req.cookies[opts.sessionCookieName]) return next()
+    if (!req.cookies[opts.sessionCookieName]) {
+      req.session = {}
+      return next()
+    }
 
     const sessionId = unsign(req.cookies[opts.sessionCookieName], opts.secretKey)
     if (sessionId === false) {

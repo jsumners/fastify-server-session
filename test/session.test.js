@@ -147,3 +147,55 @@ test('set session data', (t) => {
     })
   })
 })
+
+test('separate clients do not share a session', {only: true}, (t) => {
+  t.plan(8)
+  const server = fastify()
+  server
+    .register(fastifyCookie)
+    .register(fastifyCaching)
+    .register(plugin, {
+      secretKey,
+      cookie: {
+        domain: '127.0.0.1',
+        path: '/'
+      }
+    })
+
+  server.get('/one/:clientid', (req, reply) => {
+    t.notOk(req.session.client)
+    req.session.client = req.params.clientid
+    reply.send()
+  })
+
+  server.get('/two/:clientid', (req, reply) => {
+    t.ok(req.session.client)
+    t.is(req.session.client, req.params.clientid)
+    reply.send()
+  })
+
+  server.listen(0, (err) => {
+    server.server.unref()
+    if (err) t.threw(err)
+
+    const port = server.server.address().port
+    const jar1 = request.jar()
+    const jar2 = request.jar()
+    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`})
+
+    r.get({url: '/one/foo', jar: jar1}, (err, res, body) => {
+      if (err) t.threw(err)
+
+      r.get({url: '/one/bar', jar: jar2}, (err, res, body) => {
+        if (err) t.threw(err)
+
+        r.get({url: '/two/foo', jar: jar1}, (err, res, body) => {
+          t.error(err)
+        })
+        r.get({url: '/two/bar', jar: jar2}, (err, res, body) => {
+          t.error(err)
+        })
+      })
+    })
+  })
+})
