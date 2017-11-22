@@ -27,7 +27,7 @@ fastify
   })
 
 fastify.get('/one', (req, reply) => {
-  res.session.foo = 'foo'
+  req.session.foo = 'foo'
   reply.send()
 })
 
