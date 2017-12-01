@@ -39,6 +39,7 @@ function plugin (fastify, options, next) {
     }
 
     const sessionId = unsign(req.cookies[opts.sessionCookieName], opts.secretKey)
+    req.log.trace('sessionId: %s', sessionId)
     if (sessionId === false) {
       req.log.warn('session id signature mismatch')
       req.session = {}
@@ -51,11 +52,11 @@ function plugin (fastify, options, next) {
         return next(err)
       }
       if (!cached) {
-        req.log.trace('session data missing (expired)')
+        req.log.trace('session data missing (new/expired)')
         req.session = {}
         return next()
       }
-      req.log.trace('session restored')
+      req.log.trace('session restored: %j', req.session)
       req.session = cached.item
       next()
     })
