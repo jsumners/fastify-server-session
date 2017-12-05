@@ -30,7 +30,7 @@
   "devDependencies": {
     "abstract-logging": "^1.0.0",
     "cookie": "^0.3.1",
-    "fastify": "^0.35.2",
+    "fastify": "^0.35.5",
     "fastify-caching": "^2.0.0",
     "fastify-cookie": "^1.1.2",
     "pre-commit": "^1.2.2",
