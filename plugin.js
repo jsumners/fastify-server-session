@@ -101,4 +101,4 @@ function plugin (fastify, options, next) {
   next()
 }
 
-module.exports = fp(plugin, '>=0.33.0')
+module.exports = fp(plugin, '>=0.35.4')
