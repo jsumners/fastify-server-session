@@ -101,4 +101,10 @@ function plugin (fastify, options, next) {
   next()
 }
 
-module.exports = fp(plugin, '>=0.35.4')
+module.exports = fp(plugin, {
+  fastify: '>=1.0.0-rc.1',
+  dependencies: ['fastify-cookie'],
+  decorators: {
+    fastify: ['cache']
+  }
+})

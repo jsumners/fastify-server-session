@@ -34,10 +34,18 @@ test('registers with all dependencies met', (t) => {
   server
     .register(fastifyCookie)
     .register(fastifyCaching)
-    .register(plugin, {secretKey}, (err) => {
+    .register(plugin, {secretKey})
+    .after((err) => {
       if (err) t.threw(err)
       t.pass()
     })
+
+  server.listen(0, (err) => {
+    server.server.unref()
+    if (err) t.threw(err)
+  })
+
+  t.tearDown(() => server.close())
 })
 
 test('decorates server with session object', (t) => {

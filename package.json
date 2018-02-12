@@ -30,18 +30,18 @@
   "devDependencies": {
     "abstract-logging": "^1.0.0",
     "cookie": "^0.3.1",
-    "fastify": "^0.35.5",
-    "fastify-caching": "^2.0.0",
-    "fastify-cookie": "^1.1.2",
+    "fastify": "^1.0.0-rc.1",
+    "fastify-caching": "^2.0.3",
+    "fastify-cookie": "^1.2.1",
     "pre-commit": "^1.2.2",
     "request": "^2.83.0",
     "snazzy": "^7.0.0",
     "standard": "^10.0.3",
-    "tap": "^11.0.0"
+    "tap": "^11.1.0"
   },
   "dependencies": {
-    "cookie-signature": "^1.0.6",
-    "fastify-plugin": "^0.1.1",
+    "cookie-signature": "^1.1.0",
+    "fastify-plugin": "^0.2.2",
     "merge-options": "^1.0.0",
     "uid-safe": "^2.1.5"
   }
