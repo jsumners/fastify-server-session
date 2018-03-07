@@ -30,14 +30,14 @@
   "devDependencies": {
     "abstract-logging": "^1.0.0",
     "cookie": "^0.3.1",
-    "fastify": "^1.0.0-rc.1",
-    "fastify-caching": "^2.0.3",
-    "fastify-cookie": "^1.2.1",
+    "fastify": "^1.1.0",
+    "fastify-caching": "^3.0.0",
+    "fastify-cookie": "^2.0.0",
     "pre-commit": "^1.2.2",
     "request": "^2.83.0",
-    "snazzy": "^7.0.0",
-    "standard": "^10.0.3",
-    "tap": "^11.1.0"
+    "snazzy": "^7.1.1",
+    "standard": "^11.0.0",
+    "tap": "^11.1.1"
   },
   "dependencies": {
     "cookie-signature": "^1.1.0",
