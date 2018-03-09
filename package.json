@@ -4,6 +4,8 @@
   "description": "A Fastify plugin to maintain state on the server",
   "main": "plugin.js",
   "scripts": {
+    "pretest": "docker-compose up -d mongodb",
+    "posttest": "docker-compose down",
     "test": "tap 'test/**/*.test.js'",
     "test-ci": "tap --cov 'test/**/*.test.js'",
     "lint": "standard | snazzy",
@@ -28,6 +30,8 @@
   },
   "homepage": "https://github.com/jsumners/fastify-server-session#readme",
   "devDependencies": {
+    "abstract-cache": "^1.0.1",
+    "abstract-cache-mongo": "^2.0.1",
     "abstract-logging": "^1.0.0",
     "cookie": "^0.3.1",
     "fastify": "^1.1.0",

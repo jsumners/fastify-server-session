@@ -5,9 +5,14 @@ node_js:
   - "8"
   - "6"
 
+sudo: required
+services:
+  - docker
+
 script:
   - npm run lint-ci
-  - npm run test-ci
+  - docker-compose up -d mongo && npm run test-ci
+  - docker-compose down
 
 notifications:
   email:
