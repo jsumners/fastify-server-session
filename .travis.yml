@@ -11,7 +11,7 @@ services:
 
 script:
   - npm run lint-ci
-  - docker-compose up -d mongo && npm run test-ci
+  - docker-compose up -d mongodb && npm run test-ci
   - docker-compose down
 
 notifications:
