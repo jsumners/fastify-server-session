@@ -15,7 +15,8 @@ const defaultOptions = {
   },
   secretKey: undefined,
   sessionCookieName: 'sessionid',
-  sessionMaxAge: MAX_AGE
+  sessionMaxAge: MAX_AGE,
+  allowEmptySession: true,
 }
 
 function plugin (fastify, options, next) {
@@ -89,6 +90,11 @@ function plugin (fastify, options, next) {
         reply.setCookie(opts.sessionCookieName, signedId, cookieOpts)
         next()
       })
+    }
+
+    if (!opts.allowEmptySession && Object.keys(req.session).length == 0) {
+      //Don't create empty session if configuration does not allow it
+      return next()
     }
 
     if (req.cookies[opts.sessionCookieName]) {

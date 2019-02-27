@@ -45,7 +45,7 @@ test('registers with all dependencies met', (t) => {
     if (err) t.threw(err)
   })
 
-  t.tearDown(() => server.close())
+  t.tearDown(() => server.close().catch(()=>{}))
 })
 
 test('decorates server with session object', (t) => {
@@ -152,6 +152,61 @@ test('set session data', (t) => {
       r.get('/two', (err, res, body) => {
         if (err) t.threw(err)
       })
+    })
+  })
+})
+
+test('allowEmptySession=false: avoid creation of empty sessions', (t) => {
+  t.plan(1)
+
+  const server = fastify()
+  server
+    .register(fastifyCookie)
+    .register(fastifyCaching)
+    .register(plugin, {secretKey, allowEmptySession: false})
+
+  server.get('/notcreate', (req, reply) => {
+    reply.send()
+  })
+
+  server.listen(0, (err) => {
+    server.server.unref()
+    if (err) t.threw(err)
+
+    const port = server.server.address().port
+    const r2 = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: false})
+    r2.get('/notcreate', (err, res, body) => {
+      if (err) t.threw(err)
+      if (!res.headers['set-cookie']) {
+        t.ok('fine!')
+      }
+    })
+  })
+})
+
+test('allowEmptySession=false: create non empty sessions', (t) => {
+  t.plan(1)
+
+  const server = fastify()
+  server
+    .register(fastifyCookie)
+    .register(fastifyCaching)
+    .register(plugin, {secretKey, allowEmptySession: false})
+
+  server.get('/create', (req, reply) => {
+    req.session.one = true
+    reply.send()
+  })
+
+  server.listen(0, (err) => {
+    server.server.unref()
+    if (err) t.threw(err)
+
+    const port = server.server.address().port
+    const r2 = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: false})
+    r2.get('/create', (err, res, body) => {
+      if (err) t.threw(err)
+      t.match(res.headers['set-cookie'], /sessionid/)
     })
   })
 })
