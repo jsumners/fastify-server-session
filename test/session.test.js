@@ -45,7 +45,7 @@ test('registers with all dependencies met', (t) => {
     if (err) t.threw(err)
   })
 
-  t.tearDown(() => server.close().catch(()=>{}))
+  t.tearDown(() => server.close().catch(() => {}))
 })
 
 test('decorates server with session object', (t) => {
