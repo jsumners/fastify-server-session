@@ -18,6 +18,7 @@ const defaultOptions = {
   sessionMaxAge: MAX_AGE,
   allowEmptySession: true
 }
+const isNewSession = Symbol('isNewSession')
 
 function plugin (fastify, options, next) {
   const _options = (Function.prototype.isPrototypeOf(options)) ? {} : options
@@ -30,7 +31,6 @@ function plugin (fastify, options, next) {
   }
 
   fastify.decorateRequest('session', {})
-  const isNewSession = Symbol('isNewSession')
   // I really think this should be an onRequest, but that hook doesn't
   // have Fastify objects passed in. ~ jsumners
   fastify.addHook('preHandler', function (req, reply, next) {
@@ -97,6 +97,10 @@ function plugin (fastify, options, next) {
       // Don't create empty session if configuration does not allow it
       return next()
     }
+
+    // Change to false before storing such that in cases of in memory cache, the stored session will
+    // never be new
+    req.session[isNewSession] = false
 
     if (req.cookies[opts.sessionCookieName]) {
       const id = unsign(req.cookies[opts.sessionCookieName], opts.secretKey)

@@ -142,7 +142,7 @@ test('set session data', (t) => {
     if (err) t.threw(err)
 
     const port = server.server.address().port
-    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: true})
+    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: request.jar()})
 
     r.get('/one', (err, res, body) => {
       if (err) t.threw(err)
@@ -239,7 +239,8 @@ test('allowEmptySession=false: enable not new sessions to become empty', (t) => 
     if (err) t.threw(err)
 
     const port = server.server.address().port
-    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: true})
+    const jar = request.jar()
+    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: jar})
     r.get('/create', (err, res, body) => {
       if (err) t.threw(err)
       t.match(res.headers['set-cookie'], /sessionid/)
