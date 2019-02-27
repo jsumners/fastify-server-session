@@ -30,12 +30,13 @@ function plugin (fastify, options, next) {
   }
 
   fastify.decorateRequest('session', {})
-
+  const isNewSession = Symbol('isNewSession')
   // I really think this should be an onRequest, but that hook doesn't
   // have Fastify objects passed in. ~ jsumners
   fastify.addHook('preHandler', function (req, reply, next) {
     if (!req.cookies[opts.sessionCookieName]) {
       req.session = {}
+      req.session[isNewSession] = true
       return next()
     }
 
@@ -92,7 +93,7 @@ function plugin (fastify, options, next) {
       })
     }
 
-    if (!opts.allowEmptySession && Object.keys(req.session).length === 0) {
+    if (!opts.allowEmptySession && Object.keys(req.session).length === 0 && req.session[isNewSession]) {
       // Don't create empty session if configuration does not allow it
       return next()
     }
