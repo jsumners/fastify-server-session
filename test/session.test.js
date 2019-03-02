@@ -18,14 +18,14 @@ test('rejects if no secretKey supplied', (t) => {
 test('rejects if secretKey is too short', (t) => {
   t.plan(1)
   const server = fastify()
-  t.throws(server.register.bind(plugin, {secretKey: '123456'}))
+  t.throws(server.register.bind(plugin, { secretKey: '123456' }))
 })
 
 test('rejects if cookie expiration is not an integer', (t) => {
   t.plan(1)
   const server = fastify()
   server.register(fastifyCookie).register(fastifyCaching)
-  t.throws(server.register.bind(plugin, {secretKey, cookie: {expires: 'foo'}}))
+  t.throws(server.register.bind(plugin, { secretKey, cookie: { expires: 'foo' } }))
 })
 
 test('registers with all dependencies met', (t) => {
@@ -34,7 +34,7 @@ test('registers with all dependencies met', (t) => {
   server
     .register(fastifyCookie)
     .register(fastifyCaching)
-    .register(plugin, {secretKey})
+    .register(plugin, { secretKey })
     .after((err) => {
       if (err) t.threw(err)
       t.pass()
@@ -54,7 +54,7 @@ test('decorates server with session object', (t) => {
   server
     .register(fastifyCookie)
     .register(fastifyCaching)
-    .register(plugin, {secretKey})
+    .register(plugin, { secretKey })
 
   server.get('/', (req, reply) => {
     t.ok(req.session)
@@ -78,7 +78,7 @@ test('sets cookie name', (t) => {
   server
     .register(fastifyCookie)
     .register(fastifyCaching)
-    .register(plugin, {secretKey, sessionCookieName: 'foo-session'})
+    .register(plugin, { secretKey, sessionCookieName: 'foo-session' })
 
   server.get('/', (req, reply) => {
     req.session.touched = true
@@ -103,7 +103,7 @@ test('sets cookie expiration', (t) => {
   server
     .register(fastifyCookie)
     .register(fastifyCaching)
-    .register(plugin, {secretKey, cookie: {expires: 60000}})
+    .register(plugin, { secretKey, cookie: { expires: 60000 } })
 
   server.get('/', (req, reply) => {
     req.session.touched = true
@@ -130,7 +130,7 @@ test('set session data', (t) => {
   server
     .register(fastifyCookie)
     .register(fastifyCaching)
-    .register(plugin, {secretKey})
+    .register(plugin, { secretKey })
 
   server.get('/one', (req, reply) => {
     req.session.one = true
@@ -148,7 +148,7 @@ test('set session data', (t) => {
     if (err) t.threw(err)
 
     const port = server.server.address().port
-    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: request.jar()})
+    const r = request.defaults({ baseUrl: `http://127.0.0.1:${port}`, jar: request.jar() })
 
     r.get('/one', (err, res, body) => {
       if (err) t.threw(err)
@@ -162,7 +162,7 @@ test('set session data', (t) => {
   })
 })
 
-test('separate clients do not share a session', {only: true}, (t) => {
+test('separate clients do not share a session', { only: true }, (t) => {
   t.plan(8)
   const server = fastify()
   server
@@ -195,18 +195,18 @@ test('separate clients do not share a session', {only: true}, (t) => {
     const port = server.server.address().port
     const jar1 = request.jar()
     const jar2 = request.jar()
-    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`})
+    const r = request.defaults({ baseUrl: `http://127.0.0.1:${port}` })
 
-    r.get({url: '/one/foo', jar: jar1}, (err, res, body) => {
+    r.get({ url: '/one/foo', jar: jar1 }, (err, res, body) => {
       if (err) t.threw(err)
 
-      r.get({url: '/one/bar', jar: jar2}, (err, res, body) => {
+      r.get({ url: '/one/bar', jar: jar2 }, (err, res, body) => {
         if (err) t.threw(err)
 
-        r.get({url: '/two/foo', jar: jar1}, (err, res, body) => {
+        r.get({ url: '/two/foo', jar: jar1 }, (err, res, body) => {
           t.error(err)
         })
-        r.get({url: '/two/bar', jar: jar2}, (err, res, body) => {
+        r.get({ url: '/two/bar', jar: jar2 }, (err, res, body) => {
           t.error(err)
         })
       })

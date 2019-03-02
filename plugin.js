@@ -1,7 +1,7 @@
 'use strict'
 
 const fp = require('fastify-plugin')
-const {sign, unsign} = require('cookie-signature')
+const { sign, unsign } = require('cookie-signature')
 const uidgen = require('uid-safe')
 const merge = require('merge-options')
 const MAX_AGE = 1800000 // 30 minutes
@@ -18,7 +18,7 @@ const defaultOptions = {
   sessionMaxAge: MAX_AGE
 }
 const getSession = require('./lib/session')
-const {symbols: syms} = getSession
+const { symbols: syms } = getSession
 
 function plugin (fastify, options, pluginRegistrationDone) {
   const _options = (Function.prototype.isPrototypeOf(options)) ? {} : options
