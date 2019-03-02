@@ -46,7 +46,6 @@ be a string with a minimum of 32 characters.
 to the client to track the session.
 + `sessionMaxAge` (Default: `1800000`): a duration in milliseconds for which
 the sessions will be valid.
-+ `allowEmptySession` (Default: `true`): When false, new empty sessions are not created (and cookie is not created).
 + `cookie`: an options as described in the [cookie module's documentation][cookiedoc].
 The default value is:
     * `domain`: `undefined`

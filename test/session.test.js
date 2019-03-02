@@ -80,7 +80,10 @@ test('sets cookie name', (t) => {
     .register(fastifyCaching)
     .register(plugin, {secretKey, sessionCookieName: 'foo-session'})
 
-  server.get('/', (req, reply) => reply.send())
+  server.get('/', (req, reply) => {
+    req.session.touched = true
+    reply.send()
+  })
 
   server.listen(0, (err) => {
     server.server.unref()
@@ -102,7 +105,10 @@ test('sets cookie expiration', (t) => {
     .register(fastifyCaching)
     .register(plugin, {secretKey, cookie: {expires: 60000}})
 
-  server.get('/', (req, reply) => reply.send())
+  server.get('/', (req, reply) => {
+    req.session.touched = true
+    reply.send()
+  })
 
   server.listen(0, (err) => {
     server.server.unref()
@@ -151,112 +157,6 @@ test('set session data', (t) => {
 
       r.get('/two', (err, res, body) => {
         if (err) t.threw(err)
-      })
-    })
-  })
-})
-
-test('allowEmptySession=false: avoid creation of empty sessions', (t) => {
-  t.plan(1)
-
-  const server = fastify()
-  server
-    .register(fastifyCookie)
-    .register(fastifyCaching)
-    .register(plugin, {secretKey, allowEmptySession: false})
-
-  server.get('/notcreate', (req, reply) => {
-    reply.send()
-  })
-
-  server.listen(0, (err) => {
-    server.server.unref()
-    if (err) t.threw(err)
-
-    const port = server.server.address().port
-    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: false})
-    r.get('/notcreate', (err, res, body) => {
-      if (err) t.threw(err)
-      if (!res.headers['set-cookie']) {
-        t.ok('fine!')
-      }
-    })
-  })
-})
-
-test('allowEmptySession=false: create non empty sessions', (t) => {
-  t.plan(1)
-
-  const server = fastify()
-  server
-    .register(fastifyCookie)
-    .register(fastifyCaching)
-    .register(plugin, {secretKey, allowEmptySession: false})
-
-  server.get('/create', (req, reply) => {
-    req.session.one = true
-    reply.send()
-  })
-
-  server.listen(0, (err) => {
-    server.server.unref()
-    if (err) t.threw(err)
-
-    const port = server.server.address().port
-    const r2 = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: false})
-    r2.get('/create', (err, res, body) => {
-      if (err) t.threw(err)
-      t.match(res.headers['set-cookie'], /sessionid/)
-    })
-  })
-})
-
-test('allowEmptySession=false: enable not new sessions to become empty', (t) => {
-  t.plan(4)
-
-  const server = fastify()
-  server
-    .register(fastifyCookie)
-    .register(fastifyCaching)
-    .register(plugin, {secretKey, allowEmptySession: false})
-
-  server.get('/create', (req, reply) => {
-    req.session.one = true
-    reply.send()
-  })
-
-  server.get('/invalidate', (req, reply) => {
-    delete req.session.one
-    reply.send()
-  })
-
-  server.get('/get', (req, reply) => {
-    reply.send(req.session)
-  })
-
-  server.listen(0, (err) => {
-    server.server.unref()
-    if (err) t.threw(err)
-
-    const port = server.server.address().port
-    const jar = request.jar()
-    const r = request.defaults({baseUrl: `http://127.0.0.1:${port}`, jar: jar})
-    r.get('/create', (err, res, body) => {
-      if (err) t.threw(err)
-      t.match(res.headers['set-cookie'], /sessionid/)
-      r.get('/get', (err, res, body) => {
-        if (err) t.threw(err)
-        const json = JSON.parse(body)
-        t.is(json.one, true)
-        r.get('/invalidate', (err, res, body) => {
-          if (err) t.threw(err)
-          t.match(res.headers['set-cookie'], /sessionid/)
-          r.get('/get', (err, res, body) => {
-            if (err) t.threw(err)
-            const json = JSON.parse(body)
-            t.is(Object.keys(json).length, 0)
-          })
-        })
       })
     })
   })

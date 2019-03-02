@@ -15,69 +15,79 @@ const defaultOptions = {
   },
   secretKey: undefined,
   sessionCookieName: 'sessionid',
-  sessionMaxAge: MAX_AGE,
-  allowEmptySession: true
+  sessionMaxAge: MAX_AGE
 }
-const isNewSession = Symbol('isNewSession')
+const getSession = require('./lib/session')
+const {symbols: syms} = getSession
 
-function plugin (fastify, options, next) {
+function plugin (fastify, options, pluginRegistrationDone) {
   const _options = (Function.prototype.isPrototypeOf(options)) ? {} : options
   const opts = merge({}, defaultOptions, _options)
-  if (!opts.secretKey) return next(Error('must supply secretKey'))
+  if (!opts.secretKey) return pluginRegistrationDone(Error('must supply secretKey'))
   // https://security.stackexchange.com/a/96176/38214
-  if (opts.secretKey.length < 32) return next(Error('secretKey must be at least 32 characters'))
+  if (opts.secretKey.length < 32) return pluginRegistrationDone(Error('secretKey must be at least 32 characters'))
   if (opts.cookie.expires && !Number.isInteger(opts.cookie.expires)) {
-    return next(Error('cookie expires time must be a value in milliseconds'))
+    return pluginRegistrationDone(Error('cookie expires time must be a value in milliseconds'))
   }
 
-  fastify.decorateRequest('session', {})
-  fastify.addHook('onRequest', function (req, reply, next) {
+  fastify.decorateRequest('session', getSession())
+  fastify.addHook('onRequest', function (req, reply, hookFinished) {
     if (!req.cookies[opts.sessionCookieName]) {
-      req.session = {}
-      req.session[isNewSession] = true
-      return next()
+      req.session = getSession()
+      return hookFinished()
     }
 
     const sessionId = unsign(req.cookies[opts.sessionCookieName], opts.secretKey)
     req.log.trace('sessionId: %s', sessionId)
     if (sessionId === false) {
-      req.log.warn('session id signature mismatch')
-      req.session = {}
-      return next()
+      req.log.warn('session id signature mismatch, starting new session')
+      req.session = getSession()
+      return hookFinished()
     }
 
     this.cache.get(sessionId, (err, cached) => {
       if (err) {
         req.log.trace('could not retrieve session data')
-        return next(err)
+        return hookFinished(err)
       }
       if (!cached) {
         req.log.trace('session data missing (new/expired)')
-        req.session = {}
-        return next()
+        req.session = getSession()
+        return hookFinished()
       }
+      req.session = getSession(cached.item)
       req.log.trace('session restored: %j', req.session)
-      req.session = cached.item
-      next()
+      hookFinished()
     })
   })
 
-  fastify.addHook('onSend', function (req, reply, payload, next) {
-    const storeSession = (err, sessionId) => {
+  fastify.addHook('onSend', function (req, reply, payload, hookFinished) {
+    if (req.session[syms.kSessionModified] === false) {
+      return hookFinished()
+    }
+
+    if (req.cookies[opts.sessionCookieName]) {
+      const id = unsign(req.cookies[opts.sessionCookieName], opts.secretKey)
+      return storeSession(null, id)
+    }
+
+    uidgen(18, storeSession.bind(this))
+
+    function storeSession (err, sessionId) {
       if (err) {
         req.log.trace('could not store session with invalid id')
-        return next(err)
+        return hookFinished(err)
       }
 
       if (!sessionId) {
         req.log.trace('could not store session with missing id')
-        return next(Error('missing session id'))
+        return hookFinished(Error('missing session id'))
       }
 
       this.cache.set(sessionId, req.session, opts.sessionMaxAge, (err) => {
         if (err) {
           req.log.trace('error saving session: %s', err.message)
-          return next(err)
+          return hookFinished(err)
         }
         const cookieExiresMs = opts.cookie && opts.cookie.expires
         const cookieOpts = merge({}, opts.cookie, {
@@ -87,27 +97,12 @@ function plugin (fastify, options, next) {
         })
         const signedId = sign(sessionId, opts.secretKey)
         reply.setCookie(opts.sessionCookieName, signedId, cookieOpts)
-        next()
+        hookFinished()
       })
     }
-
-    if (!opts.allowEmptySession && Object.keys(req.session).length === 0 && req.session[isNewSession]) {
-      // Don't create empty session if configuration does not allow it
-      return next()
-    }
-
-    // Change to false before storing such that in cases of in memory cache, the stored session will
-    // never be new
-    req.session[isNewSession] = false
-
-    if (req.cookies[opts.sessionCookieName]) {
-      const id = unsign(req.cookies[opts.sessionCookieName], opts.secretKey)
-      return storeSession(null, id)
-    }
-    uidgen(18, storeSession)
   })
 
-  next()
+  pluginRegistrationDone()
 }
 
 module.exports = fp(plugin, {
