@@ -213,3 +213,29 @@ test('separate clients do not share a session', { only: true }, (t) => {
     })
   })
 })
+
+test('no cookie is sent when new session is not changed', (t) => {
+  t.plan(1)
+
+  const server = fastify()
+  server
+    .register(fastifyCookie)
+    .register(fastifyCaching)
+    .register(plugin, { secretKey })
+
+  server.get('/notcreate', (req, reply) => {
+    reply.send()
+  })
+
+  server.listen(0, (err) => {
+    server.server.unref()
+    if (err) t.threw(err)
+
+    const port = server.server.address().port
+    const r = request.defaults({ baseUrl: `http://127.0.0.1:${port}`, jar: false })
+    r.get('/notcreate', (err, res, body) => {
+      if (err) t.threw(err)
+      t.notOk(res.headers['set-cookie'])
+    })
+  })
+})
