@@ -38,8 +38,8 @@ test('can store sessions in a mongo database', (t) => {
   function runTests () {
     server
       .register(fastifyCookie)
-      .register(fastifyCaching, {cache})
-      .register(plugin, {secretKey})
+      .register(fastifyCaching, { cache })
+      .register(plugin, { secretKey })
       .after((err) => {
         if (err) t.threw(err)
       })
@@ -64,9 +64,9 @@ test('can store sessions in a mongo database', (t) => {
       const port = server.server.address().port
       const address = `http://127.0.0.1:${port}`
       const jar = request.jar()
-      request.get(`${address}/one`, {jar}, (err, res, body) => {
+      request.get(`${address}/one`, { jar }, (err, res, body) => {
         if (err) t.threw(err)
-        request.get(`${address}/two`, {jar}, (err, res, body) => {
+        request.get(`${address}/two`, { jar }, (err, res, body) => {
           if (err) t.threw(err)
         })
       })
