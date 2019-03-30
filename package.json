@@ -1,6 +1,6 @@
 {
   "name": "fastify-server-session",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A Fastify plugin to maintain state on the server",
   "main": "plugin.js",
   "scripts": {
