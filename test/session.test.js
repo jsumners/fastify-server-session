@@ -9,38 +9,40 @@ const fastifyCookie = require('fastify-cookie')
 const plugin = require('../')
 const secretKey = '12345678901234567890123456789012'
 
-test('rejects if no secretKey supplied', (t) => {
+test('rejects if no secretKey supplied', t => {
   t.plan(1)
   const server = fastify()
   t.throws(server.register.bind(plugin))
 })
 
-test('rejects if secretKey is too short', (t) => {
+test('rejects if secretKey is too short', t => {
   t.plan(1)
   const server = fastify()
   t.throws(server.register.bind(plugin, { secretKey: '123456' }))
 })
 
-test('rejects if cookie expiration is not an integer', (t) => {
+test('rejects if cookie expiration is not an integer', t => {
   t.plan(1)
   const server = fastify()
   server.register(fastifyCookie).register(fastifyCaching)
-  t.throws(server.register.bind(plugin, { secretKey, cookie: { expires: 'foo' } }))
+  t.throws(
+    server.register.bind(plugin, { secretKey, cookie: { expires: 'foo' } })
+  )
 })
 
-test('registers with all dependencies met', (t) => {
+test('registers with all dependencies met', t => {
   t.plan(1)
   const server = fastify()
   server
     .register(fastifyCookie)
     .register(fastifyCaching)
     .register(plugin, { secretKey })
-    .after((err) => {
+    .after(err => {
       if (err) t.threw(err)
       t.pass()
     })
 
-  server.listen(0, (err) => {
+  server.listen(0, err => {
     server.server.unref()
     if (err) t.threw(err)
   })
@@ -48,7 +50,7 @@ test('registers with all dependencies met', (t) => {
   t.tearDown(() => server.close().catch(() => {}))
 })
 
-test('decorates server with session object', (t) => {
+test('decorates server with session object', t => {
   t.plan(2)
   const server = fastify()
   server
@@ -62,16 +64,19 @@ test('decorates server with session object', (t) => {
     reply.send()
   })
 
-  server.listen(0, (err) => {
+  server.listen(0, err => {
     server.server.unref()
     if (err) t.threw(err)
-    request.get(`http://127.0.0.1:${server.server.address().port}/`, (err, res, body) => {
-      if (err) t.threw(err)
-    })
+    request.get(
+      `http://127.0.0.1:${server.server.address().port}/`,
+      (err, res, body) => {
+        if (err) t.threw(err)
+      }
+    )
   })
 })
 
-test('sets cookie name', (t) => {
+test('sets cookie name', t => {
   t.plan(2)
 
   const server = fastify()
@@ -85,18 +90,21 @@ test('sets cookie name', (t) => {
     reply.send()
   })
 
-  server.listen(0, (err) => {
+  server.listen(0, err => {
     server.server.unref()
     if (err) t.threw(err)
-    request.get(`http://127.0.0.1:${server.server.address().port}/`, (err, res, body) => {
-      if (err) t.threw(err)
-      t.ok(res.headers['set-cookie'])
-      t.match(res.headers['set-cookie'], /foo-session/)
-    })
+    request.get(
+      `http://127.0.0.1:${server.server.address().port}/`,
+      (err, res, body) => {
+        if (err) t.threw(err)
+        t.ok(res.headers['set-cookie'])
+        t.match(res.headers['set-cookie'], /foo-session/)
+      }
+    )
   })
 })
 
-test('sets cookie expiration', (t) => {
+test('sets cookie expiration', t => {
   t.plan(1)
 
   const server = fastify()
@@ -110,20 +118,23 @@ test('sets cookie expiration', (t) => {
     reply.send()
   })
 
-  server.listen(0, (err) => {
+  server.listen(0, err => {
     server.server.unref()
     if (err) t.threw(err)
-    request.get(`http://127.0.0.1:${server.server.address().port}/`, (err, res, body) => {
-      if (err) t.threw(err)
-      const setCookie = cookie.parse(res.headers['set-cookie'][0])
-      const future = new Date(Date.now() + 60000)
-      const expiration = new Date(setCookie.Expires)
-      t.ok(future > expiration)
-    })
+    request.get(
+      `http://127.0.0.1:${server.server.address().port}/`,
+      (err, res, body) => {
+        if (err) t.threw(err)
+        const setCookie = cookie.parse(res.headers['set-cookie'][0])
+        const future = new Date(Date.now() + 60000)
+        const expiration = new Date(setCookie.Expires)
+        t.ok(future > expiration)
+      }
+    )
   })
 })
 
-test('set session data', (t) => {
+test('set session data', t => {
   t.plan(4)
 
   const server = fastify()
@@ -143,12 +154,15 @@ test('set session data', (t) => {
     reply.send()
   })
 
-  server.listen(0, (err) => {
+  server.listen(0, err => {
     server.server.unref()
     if (err) t.threw(err)
 
     const port = server.server.address().port
-    const r = request.defaults({ baseUrl: `http://127.0.0.1:${port}`, jar: request.jar() })
+    const r = request.defaults({
+      baseUrl: `http://127.0.0.1:${port}`,
+      jar: request.jar()
+    })
 
     r.get('/one', (err, res, body) => {
       if (err) t.threw(err)
@@ -162,7 +176,7 @@ test('set session data', (t) => {
   })
 })
 
-test('separate clients do not share a session', { only: true }, (t) => {
+test('separate clients do not share a session', { only: true }, t => {
   t.plan(8)
   const server = fastify()
   server
@@ -188,7 +202,7 @@ test('separate clients do not share a session', { only: true }, (t) => {
     reply.send()
   })
 
-  server.listen(0, (err) => {
+  server.listen(0, err => {
     server.server.unref()
     if (err) t.threw(err)
 
@@ -214,7 +228,7 @@ test('separate clients do not share a session', { only: true }, (t) => {
   })
 })
 
-test('no cookie is sent when new session is not changed', (t) => {
+test('no cookie is sent when new session is not changed', t => {
   t.plan(1)
 
   const server = fastify()
@@ -227,15 +241,64 @@ test('no cookie is sent when new session is not changed', (t) => {
     reply.send()
   })
 
-  server.listen(0, (err) => {
+  server.listen(0, err => {
     server.server.unref()
     if (err) t.threw(err)
 
     const port = server.server.address().port
-    const r = request.defaults({ baseUrl: `http://127.0.0.1:${port}`, jar: false })
+    const r = request.defaults({
+      baseUrl: `http://127.0.0.1:${port}`,
+      jar: false
+    })
     r.get('/notcreate', (err, res, body) => {
       if (err) t.threw(err)
       t.notOk(res.headers['set-cookie'])
+    })
+  })
+})
+
+test('issue #7: modify existing session', t => {
+  t.plan(2)
+
+  const server = fastify()
+  server
+    .register(fastifyCookie)
+    .register(fastifyCaching)
+    .register(plugin, {
+      secretKey,
+      cookie: {
+        domain: '127.0.0.1',
+        path: '/'
+      }
+    })
+
+  server.get('/one', (req, reply) => {
+    req.session.foo = 'foo'
+    reply.send({ hello: 'world' })
+  })
+
+  server.get('/two', (req, reply) => {
+    req.session.bar = 'bar'
+    reply.send({ session: req.session })
+  })
+
+  server.listen(0, err => {
+    server.server.unref()
+    if (err) t.threw(err)
+
+    const port = server.server.address().port
+    const r = request.defaults({
+      baseUrl: `http://127.0.0.1:${port}`,
+      jar: request.jar()
+    })
+
+    r.get('/one', (err, res, body) => {
+      if (err) t.threw(err)
+      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      r.get('/two', (err, res, body) => {
+        if (err) t.threw(err)
+        t.deepEqual(JSON.parse(body), { session: { foo: 'foo', bar: 'bar' } })
+      })
     })
   })
 })
