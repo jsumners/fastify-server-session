@@ -21,13 +21,21 @@ const getSession = require('./lib/session')
 const { symbols: syms } = getSession
 
 function plugin (fastify, options, pluginRegistrationDone) {
-  const _options = (Function.prototype.isPrototypeOf(options)) ? {} : options
+  const _options = Function.prototype.isPrototypeOf(options) ? {} : options
   const opts = merge({}, defaultOptions, _options)
-  if (!opts.secretKey) return pluginRegistrationDone(Error('must supply secretKey'))
+  if (!opts.secretKey) {
+    return pluginRegistrationDone(Error('must supply secretKey'))
+  }
   // https://security.stackexchange.com/a/96176/38214
-  if (opts.secretKey.length < 32) return pluginRegistrationDone(Error('secretKey must be at least 32 characters'))
+  if (opts.secretKey.length < 32) {
+    return pluginRegistrationDone(
+      Error('secretKey must be at least 32 characters')
+    )
+  }
   if (opts.cookie.expires && !Number.isInteger(opts.cookie.expires)) {
-    return pluginRegistrationDone(Error('cookie expires time must be a value in milliseconds'))
+    return pluginRegistrationDone(
+      Error('cookie expires time must be a value in milliseconds')
+    )
   }
 
   fastify.decorateRequest('session', getSession())
@@ -37,7 +45,10 @@ function plugin (fastify, options, pluginRegistrationDone) {
       return hookFinished()
     }
 
-    const sessionId = unsign(req.cookies[opts.sessionCookieName], opts.secretKey)
+    const sessionId = unsign(
+      req.cookies[opts.sessionCookieName],
+      opts.secretKey
+    )
     req.log.trace('sessionId: %s', sessionId)
     if (sessionId === false) {
       req.log.warn('session id signature mismatch, starting new session')
@@ -68,7 +79,7 @@ function plugin (fastify, options, pluginRegistrationDone) {
 
     if (req.cookies[opts.sessionCookieName]) {
       const id = unsign(req.cookies[opts.sessionCookieName], opts.secretKey)
-      return storeSession(null, id)
+      return storeSession.call(this, null, id)
     }
 
     uidgen(18, storeSession.bind(this))
@@ -84,14 +95,14 @@ function plugin (fastify, options, pluginRegistrationDone) {
         return hookFinished(Error('missing session id'))
       }
 
-      this.cache.set(sessionId, req.session, opts.sessionMaxAge, (err) => {
+      this.cache.set(sessionId, req.session, opts.sessionMaxAge, err => {
         if (err) {
           req.log.trace('error saving session: %s', err.message)
           return hookFinished(err)
         }
         const cookieExiresMs = opts.cookie && opts.cookie.expires
         const cookieOpts = merge({}, opts.cookie, {
-          expires: (!cookieExiresMs)
+          expires: !cookieExiresMs
             ? undefined
             : new Date(Date.now() + cookieExiresMs)
         })
