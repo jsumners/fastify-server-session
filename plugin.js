@@ -21,6 +21,7 @@ const getSession = require('./lib/session')
 const { symbols: syms } = getSession
 
 function plugin (fastify, options, pluginRegistrationDone) {
+  // eslint-disable-next-line
   const _options = Function.prototype.isPrototypeOf(options) ? {} : options
   const opts = merge({}, defaultOptions, _options)
   if (!opts.secretKey) {
@@ -117,7 +118,7 @@ function plugin (fastify, options, pluginRegistrationDone) {
 }
 
 module.exports = fp(plugin, {
-  fastify: '^2.0.0',
+  fastify: '^3.0.0',
   dependencies: ['fastify-cookie'],
   decorators: {
     fastify: ['cache']
