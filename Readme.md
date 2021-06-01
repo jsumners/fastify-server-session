@@ -10,7 +10,19 @@ a cookie for tracking sessions.
 + [fastify-caching](https://www.npmjs.com/package/fastify-caching): used to
 store the session data via the `fastify.cache` decorator.
 
+
+**Installation:**
+
+```
+npm install fastify-server-session fastify-cookie fastify-caching
+```
+
 ## Example
+
+### Server Side Storage
+
+Using this implementation the sessions will be stored in the Fastify instance
+making the server statefull.
 
 ```js
 const fastify = require('fastify')()
@@ -36,6 +48,51 @@ fastify.get('/two', (req, reply) => {
 })
 ```
 
+### Remote Cache Store
+
+`fastify-caching` offers the connectivity to a remote store like shown below with `ioredis` and `abstract-cache`.
+See `fastify-caching` [documentation](https://github.com/fastify/fastify-caching)
+
+
+```js
+// This example requires the following packages to be installed
+// - ioredis
+// - abstract-cache
+
+const IORedis = require('ioredis')
+const redis = new IORedis({host: '127.0.0.1'})
+const abcache = require('abstract-cache')({
+  useAwait: false,
+  driver: {
+    name: 'abstract-cache-redis',
+    options: {client: redis}
+  }
+})
+const fastify = require('fastify')()
+fastify
+  .register(require('fastify-cookie'))
+  .register(require('fastify-caching'), {cache: abcache})
+  .register(require('fastify-server-session'), {
+    secretKey: 'some-secret-password-at-least-32-characters-long',
+    sessionMaxAge: 900000, // 15 minutes in milliseconds
+    cookie: {
+      domain: '.example.com',
+      path: '/'
+    }
+  })
+
+fastify.get('/one', (req, reply) => {
+  req.session.foo = 'foo'
+  reply.send()
+})
+
+fastify.get('/two', (req, reply) => {
+  reply.send({foo: req.session.foo})
+})
+```
+
+**Note:** In the previous example the `sessionMaxAge` value will set the redis TTL of the session key.
+
 ## Options
 
 The plugin accepts an options object with the following properties:
@@ -55,6 +112,21 @@ The default value is:
     * `sameSite`: `true`
 
 [cookiedoc]: https://www.npmjs.com/package/cookie#options-1
+
+## TypeScript
+
+To use the type checking on session object you can use the declaration:
+
+```typescript
+declare module 'fastify' {
+  interface FastifyRequest {
+    session: {
+      foo: string;
+      bar: number;
+    };
+  }
+}
+```
 
 ## License
 
