@@ -39,7 +39,7 @@ function plugin (fastify, options, pluginRegistrationDone) {
     )
   }
 
-  fastify.decorateRequest('session', { getter: () => getSession() })
+  fastify.decorateRequest('session', { getter () { return getSession() } })
   fastify.addHook('onRequest', function (req, reply, hookFinished) {
     if (!req.cookies[opts.sessionCookieName]) {
       req.session = getSession()
