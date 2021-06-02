@@ -21,8 +21,9 @@ npm install fastify-server-session fastify-cookie fastify-caching
 
 ### Server Side Storage
 
-Using this implementation the sessions will be stored in the Fastify instance
-making the server statefull.
+Using this implementation the sessions will be stored in memory on the Fastify instance
+making the server stateful. This is not recommended for production. It will not share
+state among multiple instances of the same application.
 
 ```js
 const fastify = require('fastify')()
@@ -50,9 +51,9 @@ fastify.get('/two', (req, reply) => {
 
 ### Remote Cache Store
 
-`fastify-caching` offers the connectivity to a remote store like shown below with `ioredis` and `abstract-cache`.
-See `fastify-caching` [documentation](https://github.com/fastify/fastify-caching)
-
+`fastify-caching` offers the connectivity to a remote store as shown below with `ioredis` and `abstract-cache`.
+See `fastify-caching` [documentation](https://github.com/fastify/fastify-caching) for other
+storage capabilities.
 
 ```js
 // This example requires the following packages to be installed
@@ -62,7 +63,7 @@ See `fastify-caching` [documentation](https://github.com/fastify/fastify-caching
 const IORedis = require('ioredis')
 const redis = new IORedis({host: '127.0.0.1'})
 const abcache = require('abstract-cache')({
-  useAwait: false,
+  useAwait: true,
   driver: {
     name: 'abstract-cache-redis',
     options: {client: redis}
@@ -91,7 +92,7 @@ fastify.get('/two', (req, reply) => {
 })
 ```
 
-**Note:** In the previous example the `sessionMaxAge` value will set the redis TTL of the session key.
+**Note:** In the previous example the `sessionMaxAge` value will set the Redis TTL of the session key.
 
 ## Options
 
@@ -115,7 +116,7 @@ The default value is:
 
 ## TypeScript
 
-To use the type checking on session object you can use the declaration:
+To use type checking on session object you can use the declaration:
 
 ```typescript
 declare module 'fastify' {
