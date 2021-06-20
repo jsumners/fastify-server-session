@@ -40,7 +40,7 @@
     "pre-commit": "^1.2.2",
     "request": "^2.88.0",
     "snazzy": "^9.0.0",
-    "standard": "^14.3.4",
+    "standard": "^16.0.3",
     "tap": "^14.10.7"
   },
   "dependencies": {
