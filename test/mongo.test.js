@@ -25,7 +25,7 @@ test('can store sessions in a mongo database', (t) => {
     }
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     server.close()
     cache.stop(() => {})
   })
@@ -46,13 +46,13 @@ test('can store sessions in a mongo database', (t) => {
 
     server.get('/one', (req, reply) => {
       t.ok(req.session)
-      t.deepEqual(req.session, {})
+      t.strictSame(req.session, {})
       req.session.one = true
       reply.send()
     })
 
     server.get('/two', (req, reply) => {
-      t.strictDeepEqual(req.session, {
+      t.strictSame(req.session, {
         one: true
       })
       reply.send()
