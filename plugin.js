@@ -39,10 +39,10 @@ function plugin (fastify, options, pluginRegistrationDone) {
     )
   }
 
-  fastify.decorateRequest('session', getSession())
+  fastify.decorateRequest('session', null)
   fastify.addHook('onRequest', function (req, reply, hookFinished) {
+    req.session = getSession()
     if (!req.cookies[opts.sessionCookieName]) {
-      req.session = getSession()
       return hookFinished()
     }
 
@@ -53,7 +53,6 @@ function plugin (fastify, options, pluginRegistrationDone) {
     req.log.trace('sessionId: %s', sessionId)
     if (sessionId === false) {
       req.log.warn('session id signature mismatch, starting new session')
-      req.session = getSession()
       return hookFinished()
     }
 
@@ -64,7 +63,6 @@ function plugin (fastify, options, pluginRegistrationDone) {
       }
       if (!cached) {
         req.log.trace('session data missing (new/expired)')
-        req.session = getSession()
         return hookFinished()
       }
       req.session = getSession(cached.item)
