@@ -47,7 +47,7 @@ test('registers with all dependencies met', t => {
     if (err) t.threw(err)
   })
 
-  t.tearDown(() => server.close().catch(() => {}))
+  t.teardown(() => server.close().catch(() => {}))
 })
 
 test('decorates server with session object', t => {
@@ -60,7 +60,7 @@ test('decorates server with session object', t => {
 
   server.get('/', (req, reply) => {
     t.ok(req.session)
-    t.deepEqual(req.session, {})
+    t.strictSame(req.session, {})
     reply.send()
   })
 
@@ -198,7 +198,7 @@ test('separate clients do not share a session', { only: true }, t => {
 
   server.get('/two/:clientid', (req, reply) => {
     t.ok(req.session.client)
-    t.is(req.session.client, req.params.clientid)
+    t.equal(req.session.client, req.params.clientid)
     reply.send()
   })
 
@@ -294,10 +294,10 @@ test('issue #7: modify existing session', t => {
 
     r.get('/one', (err, res, body) => {
       if (err) t.threw(err)
-      t.deepEqual(JSON.parse(body), { hello: 'world' })
+      t.strictSame(JSON.parse(body), { hello: 'world' })
       r.get('/two', (err, res, body) => {
         if (err) t.threw(err)
-        t.deepEqual(JSON.parse(body), { session: { foo: 'foo', bar: 'bar' } })
+        t.strictSame(JSON.parse(body), { session: { foo: 'foo', bar: 'bar' } })
       })
     })
   })

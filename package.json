@@ -1,6 +1,6 @@
 {
   "name": "fastify-server-session",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "A Fastify plugin to maintain state on the server",
   "main": "plugin.js",
   "scripts": {
@@ -36,17 +36,17 @@
     "cookie": "^0.4.1",
     "fastify": "^3.0.0",
     "fastify-caching": "^6.0.1",
-    "fastify-cookie": "^4.0.2",
+    "fastify-cookie": "^5.3.1",
     "pre-commit": "^1.2.2",
     "request": "^2.88.0",
-    "snazzy": "^8.0.0",
-    "standard": "^14.3.4",
-    "tap": "^14.10.7"
+    "snazzy": "^9.0.0",
+    "standard": "^16.0.3",
+    "tap": "^15.0.9"
   },
   "dependencies": {
     "cookie-signature": "^1.1.0",
-    "fastify-plugin": "^2.0.0",
-    "merge-options": "^2.0.0",
+    "fastify-plugin": "^3.0.0",
+    "merge-options": "^3.0.4",
     "uid-safe": "^2.1.5"
   }
 }
