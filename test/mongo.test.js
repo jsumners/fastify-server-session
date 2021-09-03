@@ -73,3 +73,68 @@ test('can store sessions in a mongo database', (t) => {
     })
   }
 })
+
+test('can store sessions in a mongo database useAwait:true', (t) => {
+  t.plan(3)
+
+  const server = fastify()
+  const cache = require('abstract-cache')({
+    useAwait: true,
+    driver: {
+      name: 'abstract-cache-mongo',
+      options: {
+        dbName: 'testing-await',
+        mongodb: {
+          url: 'mongodb://localhost:27017/testing-await'
+        }
+      }
+    }
+  })
+
+  t.teardown(() => {
+    server.close()
+    cache.stop()
+  })
+
+  cache.start()
+    .then(runTests)
+    .catch(t.threw)
+
+  function runTests () {
+    server
+      .register(fastifyCookie)
+      .register(fastifyCaching, { cache })
+      .register(plugin, { secretKey })
+      .after((err) => {
+        if (err) t.threw(err)
+      })
+
+    server.get('/one', (req, reply) => {
+      t.ok(req.session)
+      t.strictSame(req.session, {})
+      req.session.one = true
+      reply.send()
+    })
+
+    server.get('/two', (req, reply) => {
+      t.strictSame(req.session, {
+        one: true
+      })
+      reply.send()
+    })
+
+    server.listen(0, (err) => {
+      server.server.unref()
+      if (err) t.threw(err)
+      const port = server.server.address().port
+      const address = `http://127.0.0.1:${port}`
+      const jar = request.jar()
+      request.get(`${address}/one`, { jar }, (err, res, body) => {
+        if (err) t.threw(err)
+        request.get(`${address}/two`, { jar }, (err, res, body) => {
+          if (err) t.threw(err)
+        })
+      })
+    })
+  }
+})
